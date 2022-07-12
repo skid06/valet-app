@@ -49,7 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::resource('company', CompanyController::class)->only('update');
         Route::resource('department', DepartmentController::class)->only('store');
         Route::post('/department/{departmentID}/user/{userID}', [ManageDepartmentController::class, 'assignUser']);
-        Route::delete('/department/{departmentID}/project/{projectID}', [ManageDepartmentController::class, 'assignUser']);
+        Route::delete('/department/{departmentID}/project/{projectID}', [ManageDepartmentController::class, 'assignProject']);
         Route::post('/department/{departmentID}/project/{projectID}', [ManageDepartmentController::class, 'assignProject']);
         Route::resource('projects', ProjectController::class);
     });

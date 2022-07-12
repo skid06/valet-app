@@ -47,7 +47,6 @@ class ManageDepartmentController extends Controller
 
     public function assignProject($departmentID, $projectID)
     {
-        $company_service = new CompanyService;
         $project = Project::where('id', $projectID)->first();
         if(!$project) {
             return response()->json([
@@ -55,6 +54,7 @@ class ManageDepartmentController extends Controller
             ], 404);            
         }
 
+        $company_service = new CompanyService;
         $company_project = $company_service->belongToCompany($project->company_id);
         if(!$company_project) {
             return response()->json([
@@ -76,12 +76,23 @@ class ManageDepartmentController extends Controller
             ], 403);
         }
 
-        if(!request()->remove_project){
+        $project_ids = $department->projects->pluck('id')->toArray();
+        if(request()->remove_project){
+            if(!in_array($project->id, $project_ids)){
+                return response()->json([
+                    'message' => "$project->name is not found from $department->name."
+                ], 404);
+            }
             $department->projects()->detach($project->id);      
             return response()->json([
                 'message' => "You have unassigned $project->name from $department->name."
             ], 201);  
         } else {
+            if(in_array($project->id, $project_ids)){
+                return response()->json([
+                    'message' => "$project->name is already assigned to $department->name."
+                ], 200);
+            }
             $department->projects()->attach($project->id, [
                 'from_date' => now()->toDateString(), 
                 'to_date' => now()->addYear(1)->toDateString()
