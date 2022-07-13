@@ -73,5 +73,124 @@ class CompanyService
             return false;
         }
         return true;
+    }
+    
+    public function assignProject($department, $project, bool $remove_project)
+    {
+        // $project = Project::where('id', $projectID)->first();
+        if(!$project) {
+            return response()->json([
+                'message' => 'Project is not found.'
+            ], 404);            
+        }
+
+        $company_project = $this->belongToCompany($project->company_id);
+        if(!$company_project) {
+            return response()->json([
+                'message' => 'Project doesn\'t belong to your company.'
+            ], 403);
+        }
+
+        // $department = Department::where('id', $departmentID)->first();
+        if(!$department) {
+            return response()->json([
+                'message' => 'Department is not found.'
+            ], 404);            
+        }
+
+        $company_department = $this->belongToCompany($department->company_id);
+        if(!$company_department) {
+            return response()->json([
+                'message' => 'Department doesn\'t belong to your company.'
+            ], 403);
+        }
+
+        $project_ids = $department->projects->pluck('id')->toArray();
+        if($remove_project){
+            if(!in_array($project->id, $project_ids)){
+                return response()->json([
+                    'message' => "$project->name is not found from $department->name."
+                ], 404);
+            }
+            $department->projects()->detach($project->id);      
+            return response()->json([
+                'message' => "You have unassigned $project->name from $department->name."
+            ], 200);  
+        } else {
+            if(in_array($project->id, $project_ids)){
+                return response()->json([
+                    'message' => "$project->name is already assigned to $department->name."
+                ], 200);
+            }
+            $department->projects()->attach($project->id, [
+                'from_date' => now()->toDateString(), 
+                'to_date' => now()->addYear(1)->toDateString()
+            ]);
+
+            return response()->json([
+                'message' => "You have assigned $project->name to $department->name. ".request()->remove_project
+            ], 201);
+        }
+    }   
+    
+    public function assignUser($department, $user, bool $remove_user)
+    {
+        // $userID = (int) $request->userID;
+        // $user = User::where('id', $userID)->first();
+        if(!$user) {
+            info("user is not found: ".$user);
+            return response()->json([
+                'message' => 'User is not found.ww'
+            ], 404);             
+        }  
+        info("user is found: ".$user);
+        // $company_service = new CompanyService;
+        $result = $this->validateCompanyData($department->id); 
+
+        if(!$result){
+            // return false;
+            return response()->json([
+                'message' => 'Department doesn\'t belong to your companynnn.'
+            ], 404);    
+        }
+
+        // $department = Department::where('id', $departmentID)->first();
+
+        $user_ids = $department->users->pluck('id')->toArray();
+        if($remove_user){
+            if(!in_array($user->id, $user_ids)){
+                return response()->json([
+                    'message' => "$user->name is not found from $department->name."
+                ], 404);
+            }
+            $department->users()->detach($user->id);      
+            return response()->json([
+                'message' => "You have unassigned $user->name from $department->name."
+            ], 200);  
+        } else {
+            if(in_array($user->id, $user_ids)){
+                return response()->json([
+                    'message' => "$user->name is already assigned to $department->name."
+                ], 200);
+            }
+            $department->users()->attach($user->id, [
+              'from_date' => now()->toDateString(), 
+              'to_date' => now()->addYear(1)->toDateString()
+          ]);
+
+            return response()->json([
+              'message' => "$user->name have been assigned  to $department->name."
+          ], 201);
+        }
+
+        // $department->users()->attach($user->id, [
+        //     'from_date' => now()->toDateString(), 
+        //     'to_date' => now()->addYear(1)->toDateString()
+        // ]);
+        // send welcome email to users stating he get assigned to a company
+        // event(new NewUserAssignedToCompanyEvent($user));   
+        // return response()->json([
+        //     'message' => "$user->name have been assigned  to $department->name."
+        // ], 201);
     }    
 }

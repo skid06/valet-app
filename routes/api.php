@@ -48,9 +48,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('CheckRole:owner')->group(function () {
         Route::resource('company', CompanyController::class)->only('update');
         Route::resource('department', DepartmentController::class)->only('store');
-        Route::post('/department/{departmentID}/user/{userID}', [ManageDepartmentController::class, 'assignUser']);
-        Route::delete('/department/{departmentID}/project/{projectID}', [ManageDepartmentController::class, 'assignProject']);
-        Route::post('/department/{departmentID}/project/{projectID}', [ManageDepartmentController::class, 'assignProject']);
+        Route::post('/department/{department}/user/{user}', [ManageDepartmentController::class, 'assignUser']);
+        Route::delete('/department/{department}/user/{user}', [ManageDepartmentController::class, 'assignUser']);
+        Route::delete('/department/{department}/project/{project}', [ManageDepartmentController::class, 'assignProject']);
+        Route::post('/department/{department}/project/{project}', [ManageDepartmentController::class, 'assignProject']);
         Route::resource('projects', ProjectController::class);
     });
     
